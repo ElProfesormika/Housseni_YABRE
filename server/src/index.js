@@ -18,8 +18,24 @@ if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-const corsOrigins = (process.env.CLIENT_URL || 'http://localhost:5173').split(',').map((s) => s.trim());
-app.use(cors({ origin: corsOrigins, credentials: true }));
+const corsOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      if (!origin || corsOrigins.includes(origin) || corsOrigins.includes('*')) return cb(null, true);
+      try {
+        if (/\.up\.railway\.app$/i.test(new URL(origin).hostname)) return cb(null, true);
+      } catch {
+        /* ignore */
+      }
+      return cb(null, false);
+    },
+    credentials: true,
+  })
+);
 app.use(express.json({ limit: '10mb' }));
 app.use('/uploads', express.static(uploadsDir));
 
@@ -366,18 +382,21 @@ app.use((err, _req, res, _next) => {
 });
 
 async function start() {
+  if (!process.env.DATABASE_URL) {
+    console.warn('⚠️  DATABASE_URL manquant — utilisation de la valeur locale par défaut.');
+  }
   await initDb();
   const profile = await queryOne('SELECT id FROM profile WHERE id = 1');
   if (!profile) {
-    console.log('Initialisation PostgreSQL…');
+    console.log('Initialisation PostgreSQL (seed Housséni YABRE)…');
     await seedDatabase();
   }
-  app.listen(PORT, () => {
-    console.log(`🚀 API portfolio (PostgreSQL) : http://localhost:${PORT}`);
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 API portfolio (PostgreSQL) : http://0.0.0.0:${PORT}`);
   });
 }
 
 start().catch((e) => {
-  console.error('Échec démarrage:', e.message);
+  console.error('Échec démarrage:', e);
   process.exit(1);
 });

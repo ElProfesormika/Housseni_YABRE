@@ -2,6 +2,9 @@
   "name": "portfolio-react",
   "private": true,
   "version": "1.0.0",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "npm run db:up && concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "setup": "npm run install:all && npm run db:up && npm run db:seed",

@@ -5,9 +5,16 @@ const { Pool } = pg;
 const connectionString =
   process.env.DATABASE_URL || 'postgresql://portfolio:portfolio@localhost:5432/portfolio';
 
+function useSsl(url) {
+  if (process.env.DATABASE_SSL === 'true') return true;
+  if (process.env.DATABASE_SSL === 'false') return false;
+  // Railway public proxy requires SSL; private network usually does not.
+  return /rlwy\.net|proxy\.rlwy/i.test(url);
+}
+
 export const pool = new Pool({
   connectionString,
-  ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
+  ssl: useSsl(connectionString) ? { rejectUnauthorized: false } : undefined,
 });
 
 export async function query(text, params = []) {

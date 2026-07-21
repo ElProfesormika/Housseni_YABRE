@@ -277,6 +277,36 @@ select {
   resize: vertical;
 }
 
+.password-input {
+  position: relative;
+}
+
+.password-input .form-input {
+  padding-right: 2.75rem;
+}
+
+.password-input__toggle {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.password-input__toggle:hover {
+  color: var(--accent);
+  background: rgba(6, 182, 212, 0.1);
+}
+
 .table-wrap {
   overflow-x: auto;
 }
@@ -396,11 +426,6 @@ select {
 .site-header__menu .nav-active {
   color: var(--accent);
   background: rgba(6, 182, 212, 0.08);
-}
-
-.nav-admin {
-  color: var(--accent-2) !important;
-  font-size: 0.85rem !important;
 }
 
 @media (min-width: 900px) {

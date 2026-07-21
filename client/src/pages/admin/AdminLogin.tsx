@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import PasswordInput from '../../components/admin/PasswordInput';
 
 export default function AdminLogin() {
   const { token, login } = useAuth();
@@ -37,12 +38,26 @@ export default function AdminLogin() {
         </div>
         {error && <div className="alert alert-error">{error}</div>}
         <div className="form-group">
-          <label>Email</label>
-          <input className="form-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <label htmlFor="admin-email">Email</label>
+          <input
+            id="admin-email"
+            className="form-input"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="username"
+            required
+          />
         </div>
         <div className="form-group">
-          <label>Mot de passe</label>
-          <input className="form-input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          <label htmlFor="admin-password">Mot de passe</label>
+          <PasswordInput
+            id="admin-password"
+            value={password}
+            onChange={setPassword}
+            autoComplete="current-password"
+            required
+          />
         </div>
         <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
           {loading ? 'Connexion…' : 'Se connecter'}

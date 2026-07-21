@@ -51,11 +51,6 @@ export default function Header({ profile }: { profile: Profile }) {
               </NavLink>
             </li>
           ))}
-          <li>
-            <Link to="/admin" className="nav-admin" onClick={() => setOpen(false)}>
-              Admin
-            </Link>
-          </li>
         </ul>
         <div className="site-header__actions">
           <ThemeToggle />

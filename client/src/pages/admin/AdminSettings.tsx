@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Save, Key } from 'lucide-react';
 import { api } from '../../api';
+import PasswordInput from '../../components/admin/PasswordInput';
 
 export default function AdminSettings() {
   const [settings, setSettings] = useState<Record<string, string>>({});
@@ -85,15 +86,31 @@ export default function AdminSettings() {
         </h2>
         <div className="form-group">
           <label>Mot de passe actuel</label>
-          <input className="form-input" type="password" value={pwd.current} onChange={(e) => setPwd((p) => ({ ...p, current: e.target.value }))} required />
+          <PasswordInput
+            value={pwd.current}
+            onChange={(current) => setPwd((p) => ({ ...p, current }))}
+            autoComplete="current-password"
+            required
+          />
         </div>
         <div className="form-group">
           <label>Nouveau mot de passe</label>
-          <input className="form-input" type="password" value={pwd.next} onChange={(e) => setPwd((p) => ({ ...p, next: e.target.value }))} required minLength={6} />
+          <PasswordInput
+            value={pwd.next}
+            onChange={(next) => setPwd((p) => ({ ...p, next }))}
+            autoComplete="new-password"
+            required
+            minLength={6}
+          />
         </div>
         <div className="form-group">
           <label>Confirmer</label>
-          <input className="form-input" type="password" value={pwd.confirm} onChange={(e) => setPwd((p) => ({ ...p, confirm: e.target.value }))} required />
+          <PasswordInput
+            value={pwd.confirm}
+            onChange={(confirm) => setPwd((p) => ({ ...p, confirm }))}
+            autoComplete="new-password"
+            required
+          />
         </div>
         <button type="submit" className="btn btn-ghost">Mettre à jour le mot de passe</button>
       </form>

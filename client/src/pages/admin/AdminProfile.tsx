@@ -3,6 +3,7 @@ import { Save } from 'lucide-react';
 import { api } from '../../api';
 import type { Profile } from '../../types';
 import ImageUpload from '../../components/admin/ImageUpload';
+import FileUpload from '../../components/admin/FileUpload';
 
 const empty: Profile = {
   id: 1,
@@ -105,20 +106,31 @@ export default function AdminProfile() {
           <input className="form-input" value={form.location || ''} onChange={(e) => set('location', e.target.value)} />
         </div>
         <div className="form-group">
-          <label>Photo profil (hero)</label>
+          <label>Photo profil (hero / avatar)</label>
           <ImageUpload value={form.avatar_url} onChange={(v) => set('avatar_url', v)} />
         </div>
         <div className="form-group">
-          <label>Image À propos</label>
+          <label>Image contenu « À propos » (portrait section, pas la bannière)</label>
           <ImageUpload value={form.about_image_url} onChange={(v) => set('about_image_url', v)} />
         </div>
         <div className="form-group">
-          <label>Image Compétences</label>
+          <label>Image contenu Compétences (optionnelle, hors bannière)</label>
           <ImageUpload value={form.skills_image_url} onChange={(v) => set('skills_image_url', v)} />
         </div>
+        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
+          Les bannières (slides) des pages se gèrent dans <strong>Admin → Bannières pages</strong>.
+        </p>
         <div className="form-group">
-          <label>Lien CV (PDF)</label>
-          <input className="form-input" value={form.cv_url} onChange={(e) => set('cv_url', e.target.value)} placeholder="https://..." />
+          <label>CV (PDF) — proposé en téléchargement sur le site</label>
+          <FileUpload
+            value={form.cv_url}
+            onChange={(v) => set('cv_url', v)}
+            accept="application/pdf,.pdf"
+            label="Choisir un PDF"
+          />
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+            Une fois enregistré, le bouton « Télécharger le CV » apparaît dans le menu, l’accueil, À propos et Contact.
+          </p>
         </div>
         <button type="submit" className="btn btn-primary" disabled={loading}>
           <Save size={18} /> {loading ? 'Enregistrement…' : 'Enregistrer'}

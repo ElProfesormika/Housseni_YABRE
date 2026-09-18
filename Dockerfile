@@ -24,6 +24,7 @@ COPY server/package.json server/package-lock.json ./server/
 RUN npm ci --omit=dev && npm ci --prefix server --omit=dev
 
 COPY server ./server
+COPY seed-uploads ./server/uploads
 COPY --from=builder /app/client/dist ./client/dist
 
 EXPOSE 8080

@@ -29,11 +29,16 @@ function LayoutInner() {
 
   return (
     <>
-      <Header profile={data.profile} />
+      <Header profile={data.profile} settings={data.settings} />
       <main className="site-main page-enter">
         <Outlet />
       </main>
-      <Footer profile={data.profile} socials={data.social_links} footerText={data.settings.footer_text || ''} />
+      <Footer
+        profile={data.profile}
+        socials={data.social_links}
+        footerText={data.settings.footer_text || ''}
+        settings={data.settings}
+      />
       <BackToTop />
     </>
   );

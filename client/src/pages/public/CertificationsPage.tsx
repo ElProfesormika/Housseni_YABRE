@@ -2,6 +2,7 @@ import { usePortfolio } from '../../context/PortfolioContext';
 import { usePageTitle } from '../../hooks/usePageTitle';
 import PageBanner from '../../components/portfolio/PageBanner';
 import ClickableCard from '../../components/portfolio/ClickableCard';
+import { bannerFor } from '../../utils/banners';
 
 export default function CertificationsPage() {
   usePageTitle('Certifications');
@@ -14,7 +15,7 @@ export default function CertificationsPage() {
         badge="Certifications"
         title="Formations & Certificats"
         subtitle="Compétences validées en cloud, data et machine learning"
-        image="/assets/images/AWS.img.jpeg"
+        image={bannerFor(data.page_banners, 'certifications')}
       />
       <section className="section-page container">
         <div className="grid-3">

@@ -4,26 +4,36 @@ set -e
 
 CONTAINER_NAME="portfolio-postgres"
 IMAGE="postgres:16-alpine"
-PORT="${PGPORT:-5432}"
+# 5433 par défaut : évite le conflit avec un PostgreSQL système sur 5432
+PORT="${PGPORT:-5433}"
 
 if docker ps --format '{{.Names}}' | grep -qx "$CONTAINER_NAME"; then
-  echo "✅ PostgreSQL déjà en cours ($CONTAINER_NAME)"
-  exit 0
+  mapped="$(docker port "$CONTAINER_NAME" 5432/tcp 2>/dev/null | head -1 | cut -d: -f2)"
+  if [ -n "$mapped" ] && [ "$mapped" != "$PORT" ]; then
+    echo "⚠ Conteneur actif sur le port $mapped (attendu $PORT) — recreation…"
+    docker rm -f "$CONTAINER_NAME" >/dev/null
+  else
+    echo "✅ PostgreSQL déjà en cours ($CONTAINER_NAME) → localhost:${mapped:-$PORT}"
+    exit 0
+  fi
 fi
 
 if docker ps -a --format '{{.Names}}' | grep -qx "$CONTAINER_NAME"; then
-  echo "▶ Démarrage du conteneur existant…"
-  docker start "$CONTAINER_NAME"
-else
-  echo "▶ Création du conteneur PostgreSQL…"
-  docker run -d \
-    --name "$CONTAINER_NAME" \
-    -e POSTGRES_USER=portfolio \
-    -e POSTGRES_PASSWORD=portfolio \
-    -e POSTGRES_DB=portfolio \
-    -p "${PORT}:5432" \
-    -v portfolio_pg_data:/var/lib/postgresql/data \
-    "$IMAGE"
+  echo "▶ Suppression de l'ancien conteneur (ports)…"
+  docker rm -f "$CONTAINER_NAME" >/dev/null || true
+fi
+
+echo "▶ Création du conteneur PostgreSQL sur le port ${PORT}…"
+if ! docker run -d \
+  --name "$CONTAINER_NAME" \
+  -e POSTGRES_USER=portfolio \
+  -e POSTGRES_PASSWORD=portfolio \
+  -e POSTGRES_DB=portfolio \
+  -p "${PORT}:5432" \
+  -v portfolio_pg_data:/var/lib/postgresql/data \
+  "$IMAGE"; then
+  echo "❌ Impossible de démarrer le conteneur (port ${PORT} peut-être occupé)."
+  exit 1
 fi
 
 echo "⏳ Attente de PostgreSQL…"

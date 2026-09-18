@@ -3,6 +3,7 @@ import { usePortfolio } from '../../context/PortfolioContext';
 import { usePageTitle } from '../../hooks/usePageTitle';
 import DetailView, { DetailParagraphs } from '../../components/portfolio/DetailView';
 import RelatedProjects from '../../components/portfolio/RelatedProjects';
+import { parseGalleryUrls } from '../../utils/gallery';
 
 export default function ProjectDetailPage() {
   const { id } = useParams();
@@ -15,6 +16,7 @@ export default function ProjectDetailPage() {
 
   const body = project.long_description || project.description;
   const tags = project.tags ? project.tags.split(',').map((t) => t.trim()) : [];
+  const gallery = parseGalleryUrls(project.gallery_urls);
 
   return (
     <>
@@ -27,8 +29,10 @@ export default function ProjectDetailPage() {
           { label: project.title },
         ]}
         title={project.title}
-        subtitle="Projet Data / IA — Housséni YABRE"
+        subtitle="Projet data - Housséni YABRE"
         image={project.image_url}
+        gallery={gallery}
+        video={project.video_url || undefined}
         tags={tags}
         projectUrl={project.project_url || undefined}
         repoUrl={project.repo_url || undefined}

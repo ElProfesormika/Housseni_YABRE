@@ -5,7 +5,7 @@ const SITE = 'Housséni YABRE';
 export function usePageTitle(page?: string) {
   useEffect(() => {
     document.title = page
-      ? `${page} | ${SITE} — Data Engineer & IA`
-      : `${SITE} — Data Engineer & IA`;
+      ? `${page} | ${SITE} - Data Engineer`
+      : `${SITE} - Data Engineer`;
   }, [page]);
 }

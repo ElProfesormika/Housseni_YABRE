@@ -17,11 +17,15 @@ export async function seedDatabase() {
     [
       'Housséni',
       'YABRE',
-      'Data Engineer & Ingénieur IA',
-      'Housséni YABRE — pipelines de données & systèmes IA',
+      'Étudiant ingénieur · Data Engineer',
+      'Stage de fin d’études Data Engineer — pipelines, qualité des données, mise en production (mars 2027)',
       'Je suis Housséni YABRE',
-      `Étudiant en cycle ingénieur à l'UTT, Housséni YABRE se spécialise en Data Engineering et Intelligence Artificielle : pipelines ETL, architectures cloud, modèles ML/DL et mise en production de solutions data-driven. Après le diplôme d'ingénieur, il ambitionne de poursuivre vers la recherche en IA appliquée.`,
-      'Stack orientée ingestion, transformation, modélisation et déploiement — du batch au near-real-time.',
+      `Étudiant en cycle ingénieur à l’Université de Technologie de Troyes (UTT), je me spécialise en Data Engineering et Intelligence Artificielle.
+
+Mon cœur de métier : concevoir et industrialiser des pipelines de données (ingestion, validation, transformation, exposition), garantir la qualité des flux et les rendre disponibles pour l’analytics et l’IA.
+
+Je recherche un stage de fin d’études de 6 mois (Bac +5), à partir de mars 2027, en tant que Data Engineer.`,
+      'Outils que je mobilise pour ingérer, transformer, fiabiliser et exposer des données en production.',
       'housseni.yabre@utt.fr',
       '+33 7 45 46 57 46',
       'Troyes, France',
@@ -39,19 +43,42 @@ export async function seedDatabase() {
     await query('INSERT INTO social_links (platform, url, icon, sort_order) VALUES ($1, $2, $3, $4)', s);
   }
 
-  const skills = [
-    ['Python / Scikit-learn / R / C', 70, 'python', 0],
-    ['SQL / NoSQL', 75, 'database', 1],
-    ['Spark / Hadoop', 55, 'server', 2],
-    ['ETL : Talend Open Studio', 45, 'workflow', 3],
-    ['Machine Learning / Deep Learning / LLM', 75, 'brain', 4],
-    ['AWS / Docker', 60, 'cloud', 5],
-    ['Git / GitHub', 65, 'git', 6],
-    ['Power BI', 60, 'chart', 7],
-    ['HTML/CSS & PHP', 70, 'code', 8],
-  ];
-  for (const s of skills) {
-    await query('INSERT INTO skills (name, percentage, icon, sort_order) VALUES ($1, $2, $3, $4)', s);
+  const skillsCount = await queryOne('SELECT COUNT(*)::int AS c FROM skills');
+  if (!skillsCount?.c) {
+    const skills = [
+      ['Python', 82, 'python', 'Scripts, notebooks et services Python pour les pipelines de données.', 0],
+      ['SQL / PostgreSQL', 82, 'sql', 'Requêtage, agrégation et préparation de jeux de données.', 1],
+      ['Apache Spark', 72, 'spark', 'Traitement à l’échelle pour analyses et pipelines batch.', 2],
+      ['Docker', 78, 'docker', 'Conteneurisation des traitements et des services.', 3],
+      ['AWS', 72, 'aws', 'Stockage, compute et services data cloud.', 4],
+      ['Git / GitHub', 82, 'git', 'Versionning, collaboration et traçabilité.', 5],
+    ];
+    for (const s of skills) {
+      await query(
+        'INSERT INTO skills (name, percentage, icon, description, sort_order) VALUES ($1, $2, $3, $4, $5)',
+        s
+      );
+    }
+  }
+
+  const skillSectionsCount = await queryOne('SELECT COUNT(*)::int AS c FROM skill_sections');
+  if (!skillSectionsCount?.c) {
+    const skillSections = [
+      ['Data Engineering', 'Conception de pipelines ETL/ELT\nIngestion et transformation de données\nContrôle de qualité et automatisation des traitements', 0],
+      ['Programmation & Data Processing', 'Python\nPandas\nNumPy\nPySpark', 1],
+      ['Bases de données', 'SQL avancé\nPostgreSQL\nModélisation relationnelle\nOptimisation des requêtes', 2],
+      ['Big Data & Orchestration', 'Apache Spark\nApache Airflow\nTraitement distribué\nOrchestration de workflows', 3],
+      ['Cloud & DevOps', 'AWS (S3, EC2, RDS, IAM)\nDocker\nKubernetes\nLinux/Bash\nGit/GitHub\nCI/CD', 4],
+      ['Data Architecture', 'Data Lake\nData Warehouse\nETL/ELT\nStar Schema\nCSV, JSON, Parquet', 5],
+      ['Data Quality', 'Validation des données\nGestion des valeurs manquantes\nDétection des doublons\nContrôle de schéma', 6],
+      ['Machine Learning / IA', 'Scikit-learn\nXGBoost\nDeep Learning\nReinforcement Learning\nFederated Learning\nXAI / SHAP', 7],
+      ['Calcul scientifique et autre langages', 'MATLAB\nPCA\nRPCA\nTraitement du signal\nOptimisation\nOR-Tools\nR\nJAVA', 8],
+      ['Logiciels & outils', 'FastAPI\nFlask\nReact\nWebSocket', 9],
+      ['Méthodes', 'Conception expérimentale\nAnalyse de données\nPrototypage\nDocumentation technique\nWorkflows reproductibles', 10],
+    ];
+    for (const s of skillSections) {
+      await query('INSERT INTO skill_sections (title, items, sort_order) VALUES ($1, $2, $3)', s);
+    }
   }
 
   const projects = [
@@ -97,7 +124,7 @@ export async function seedDatabase() {
       '2023',
       null,
       1,
-      'Formation en data engineering, machine learning et ingénierie des données.',
+      'Formation en data engineering, machine learning et mise en production de pipelines data.',
       0,
     ],
   ];
@@ -115,22 +142,81 @@ export async function seedDatabase() {
       'Data Engineering & IA',
       '2023',
       '2026',
-      'Spécialisation data engineering et intelligence artificielle.',
+      1,
+      'Spécialisation data engineering et data science.',
       0,
     ],
   ];
   for (const e of education) {
     await query(
-      'INSERT INTO education (school, degree, field, start_date, end_date, description, sort_order) VALUES ($1,$2,$3,$4,$5,$6,$7)',
+      'INSERT INTO education (school, degree, field, start_date, end_date, current, description, sort_order) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)',
       e
     );
   }
 
+  const banners = [
+    ['about', 'À propos', `${IMG}/mato2.png`, 0],
+    ['skills', 'Compétences', `${IMG}/DATA_SCIENCE_IMG.webp`, 1],
+    ['parcours', 'Parcours', `${IMG}/DATA_SCIENCE_IMG.webp`, 2],
+    ['projects', 'Projets', `${IMG}/ML.jpeg`, 3],
+    ['certifications', 'Certifications', `${IMG}/AWS.img.jpeg`, 4],
+    ['contact', 'Contact', `${IMG}/ma_photo-removebg.png`, 5],
+    ['kiffs', 'Mes kiff', `${IMG}/Python.analyse.predictive.jpeg`, 6],
+  ];
+  for (const b of banners) {
+    await query(
+      'INSERT INTO page_banners (page_key, label, image_url, sort_order) VALUES ($1,$2,$3,$4)',
+      b
+    );
+  }
+
+  const kiffs = [
+    [
+      'Google DeepMind',
+      'entreprise',
+      'Référence mondiale en recherche IA fondamentale et appliquée.',
+      'Coup de cœur pour la culture scientifique, les publications ouvertes et l’ambition de résoudre des problèmes difficiles avec rigueur.',
+      'https://deepmind.google/',
+      `${IMG}/ML.jpeg`,
+      1,
+      0,
+    ],
+    [
+      'Inria',
+      'labo',
+      'Institut national de recherche en sciences et technologies du numérique.',
+      'Labos et équipes data / logiciel qui incarnent l’excellence du numérique public français.',
+      'https://www.inria.fr/',
+      `${IMG}/DATA_SCIENCE_IMG.webp`,
+      1,
+      1,
+    ],
+    [
+      'Attention Is All You Need',
+      'article',
+      'L’article fondateur des Transformers (Vaswani et al., 2017).',
+      'Un papier qui a redéfini le deep learning moderne — lecture indispensable pour comprendre l’architecture derrière les LLM.',
+      'https://arxiv.org/abs/1706.03762',
+      `${IMG}/Python.analyse.predictive.jpeg`,
+      1,
+      2,
+    ],
+  ];
+  for (const k of kiffs) {
+    await query(
+      `INSERT INTO kiffs (title, category, description, long_description, url, image_url, featured, sort_order)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+      k
+    );
+  }
+
   const settings = [
-    ['site_name', 'Housséni YABRE — Data Engineer & IA'],
+    ['site_name', 'Housséni YABRE — Data Engineer'],
     ['footer_text', '© 2026 Housséni YABRE. Tous droits réservés.'],
     ['contact_form_enabled', 'true'],
     ['theme_accent', '#06b6d4'],
+    ['header_role', 'Data Engineer · UTT'],
+    ['kiffs_public', 'true'],
   ];
   for (const s of settings) {
     await query('INSERT INTO site_settings (key, value) VALUES ($1, $2)', s);

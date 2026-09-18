@@ -3,23 +3,36 @@ import { NavLink, Link, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import type { Profile } from '../../types';
 import { fullName } from '../../utils/profile';
+import { kiffsArePublic } from '../../utils/settings';
 import ThemeToggle from '../ThemeToggle';
+import CvDownload from './CvDownload';
 
-const links = [
+const baseLinks = [
   { to: '/', label: 'Accueil', end: true },
   { to: '/a-propos', label: 'À propos' },
   { to: '/competences', label: 'Compétences' },
   { to: '/parcours', label: 'Parcours' },
   { to: '/projets', label: 'Projets' },
   { to: '/certifications', label: 'Certifications' },
+  { to: '/mes-kiff', label: 'Mes kiff' },
   { to: '/contact', label: 'Contact' },
 ];
 
-export default function Header({ profile }: { profile: Profile }) {
+export default function Header({
+  profile,
+  settings,
+}: {
+  profile: Profile;
+  settings?: Record<string, string>;
+}) {
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const role = settings?.header_role || 'Data Engineer · UTT';
   const name = fullName(profile);
+  const links = kiffsArePublic(settings)
+    ? baseLinks
+    : baseLinks.filter((l) => l.to !== '/mes-kiff');
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -34,9 +47,12 @@ export default function Header({ profile }: { profile: Profile }) {
   return (
     <header className={`site-header${scrolled ? ' site-header--scrolled' : ''}`}>
       <nav className="container site-header__nav">
-        <Link to="/" className="site-header__logo">
-          {name}
-          <span className="site-header__role">Data Engineer & IA</span>
+        <Link to="/" className="site-header__logo" aria-label={name}>
+          <span className="site-header__logo-row">
+            <span className="site-header__dot" aria-hidden="true" />
+            {name}
+          </span>
+          <span className="site-header__role">{role}</span>
         </Link>
         <ul className={`site-header__menu${open ? ' is-open' : ''}`}>
           {links.map((l) => (
@@ -53,6 +69,7 @@ export default function Header({ profile }: { profile: Profile }) {
           ))}
         </ul>
         <div className="site-header__actions">
+          <CvDownload profile={profile} compact className="btn btn-primary site-header__cv" />
           <ThemeToggle />
           <button
             type="button"

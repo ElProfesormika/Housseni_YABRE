@@ -10,6 +10,8 @@ export default function DetailView({
   title,
   subtitle,
   image,
+  gallery,
+  video,
   meta,
   tags,
   children,
@@ -23,6 +25,8 @@ export default function DetailView({
   title: string;
   subtitle?: string;
   image?: string;
+  gallery?: string[];
+  video?: string;
   meta?: string;
   tags?: string[];
   children: React.ReactNode;
@@ -30,7 +34,11 @@ export default function DetailView({
   repoUrl?: string;
   credentialUrl?: string;
 }) {
-  const img = image ? mediaUrl(image) : '';
+  const cover = image ? mediaUrl(image) : '';
+  const galleryUrls = (gallery || []).map((u) => mediaUrl(u)).filter(Boolean);
+  const allImages = [...(cover ? [cover] : []), ...galleryUrls.filter((u) => u !== cover)];
+  const videoSrc = video ? mediaUrl(video) : '';
+
   return (
     <article className="detail-page">
       <Breadcrumb items={breadcrumb} />
@@ -50,6 +58,20 @@ export default function DetailView({
             </div>
           )}
           <div className="detail-body">{children}</div>
+          {videoSrc && (
+            <div className="detail-video">
+              <video src={videoSrc} controls playsInline preload="metadata" />
+            </div>
+          )}
+          {allImages.length > 1 && (
+            <div className="detail-gallery">
+              {allImages.map((src) => (
+                <a key={src} href={src} target="_blank" rel="noopener noreferrer">
+                  <img src={src} alt="" loading="lazy" />
+                </a>
+              ))}
+            </div>
+          )}
           <div className="detail-actions">
             {projectUrl && (
               <a href={projectUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
@@ -68,9 +90,9 @@ export default function DetailView({
             )}
           </div>
         </div>
-        {img && (
+        {cover && (
           <aside className="detail-page__aside">
-            <img src={img} alt={title} className="detail-hero-img" />
+            <img src={cover} alt={title} className="detail-hero-img" />
           </aside>
         )}
       </div>

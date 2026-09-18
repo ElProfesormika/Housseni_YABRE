@@ -25,7 +25,7 @@ export default function ContactForm() {
     <form className="contact-form card" onSubmit={submit}>
       <h2>Envoyer un message</h2>
       {status === 'success' && (
-        <div className="alert alert-success">Message envoyé — Housséni YABRE vous répondra rapidement.</div>
+        <div className="alert alert-success">Message envoyé - Housséni YABRE vous répondra rapidement.</div>
       )}
       {status === 'error' && error && <div className="alert alert-error">{error}</div>}
       <div className="form-group">

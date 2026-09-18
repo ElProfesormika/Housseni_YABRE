@@ -21,7 +21,7 @@ export default function AdminDashboard() {
     ? [
         { label: 'Projets', count: data.projects.length, to: '/admin/projects' },
         { label: 'Expériences', count: data.experiences.length, to: '/admin/experiences' },
-        { label: 'Compétences', count: data.skills.length, to: '/admin/skills' },
+        { label: 'Compétences', count: (data.skills || []).length, to: '/admin/skills' },
         { label: 'Certifications', count: data.certifications.length, to: '/admin/certifications' },
       ]
     : [];
@@ -32,14 +32,14 @@ export default function AdminDashboard() {
     <div>
       <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Tableau de bord</h1>
       <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>
-        Bienvenue {name} — gérez votre portfolio Data Engineer & IA.
+        Bienvenue {name} - gérez votre portfolio Data Engineer.
       </p>
 
       {unread > 0 && (
         <Link to="/admin/messages" className="card alert-banner" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', textDecoration: 'none' }}>
           <Inbox size={24} style={{ color: 'var(--accent)' }} />
           <span>
-            <strong>{unread} message(s)</strong> non lu(s) — cliquez pour voir
+            <strong>{unread} message(s)</strong> non lu(s) - cliquez pour voir
           </span>
         </Link>
       )}

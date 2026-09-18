@@ -46,24 +46,60 @@ const storage = multer.diskStorage({
     cb(null, `${unique}${path.extname(file.originalname)}`);
   },
 });
+
+const ALLOWED_UPLOAD =
+  /^(image\/|application\/pdf|video\/(mp4|webm|ogg|quicktime)|application\/octet-stream)/;
+
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: 80 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    if (/^image\//.test(file.mimetype)) cb(null, true);
-    else cb(new Error('Seules les images sont acceptées'));
+    const ok =
+      ALLOWED_UPLOAD.test(file.mimetype) ||
+      /\.(pdf|mp4|webm|mov|ogg)$/i.test(file.originalname);
+    if (ok) cb(null, true);
+    else cb(new Error('Fichier non autorisé (images, PDF ou vidéo)'));
   },
 });
 
 const asyncHandler = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
+function cvDownloadName(profile) {
+  const slug = `${profile?.first_name || 'Housseni'}_${profile?.last_name || 'YABRE'}`
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^\w]+/g, '_');
+  return `CV_${slug}.pdf`;
+}
+
+app.get(
+  '/api/cv',
+  asyncHandler(async (_req, res) => {
+    const profile = await queryOne('SELECT cv_url, first_name, last_name FROM profile WHERE id = 1');
+    if (!profile?.cv_url) return res.status(404).json({ error: 'CV indisponible' });
+    const filename = cvDownloadName(profile);
+    const raw = String(profile.cv_url);
+    if (raw.startsWith('http://') || raw.startsWith('https://')) {
+      return res.redirect(raw);
+    }
+    const file = path.basename(raw);
+    const filePath = path.join(uploadsDir, file);
+    if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'Fichier introuvable' });
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    return res.sendFile(filePath);
+  })
+);
+
 const ALLOWED_TABLES = new Set([
   'skills',
+  'skill_sections',
   'projects',
   'experiences',
   'certifications',
   'education',
   'social_links',
+  'kiffs',
 ]);
 
 function crudRoutes(table, fields) {
@@ -152,18 +188,34 @@ app.get(
     if (!profile) {
       return res.status(404).json({ error: 'Portfolio non configuré. Lancez: npm run seed --prefix server' });
     }
-    const [social_links, skills, projects, experiences, certifications, education, settingsRows] =
+    const [social_links, skills, skill_sections, projects, experiences, certifications, education, kiffs, page_banners, settingsRows] =
       await Promise.all([
         query('SELECT * FROM social_links ORDER BY sort_order'),
         query('SELECT * FROM skills ORDER BY sort_order'),
+        query('SELECT * FROM skill_sections ORDER BY sort_order, id'),
         query('SELECT * FROM projects ORDER BY sort_order'),
         query('SELECT * FROM experiences ORDER BY sort_order'),
         query('SELECT * FROM certifications ORDER BY sort_order'),
         query('SELECT * FROM education ORDER BY sort_order'),
+        query('SELECT * FROM kiffs ORDER BY sort_order'),
+        query('SELECT * FROM page_banners ORDER BY sort_order'),
         query('SELECT key, value FROM site_settings'),
       ]);
     const settings = Object.fromEntries(settingsRows.map((r) => [r.key, r.value]));
-    res.json({ profile, social_links, skills, projects, experiences, certifications, education, settings });
+    const showKiffs = settings.kiffs_public !== 'false';
+    res.json({
+      profile,
+      social_links,
+      skills,
+      skill_sections,
+      projects,
+      experiences,
+      certifications,
+      education,
+      kiffs: showKiffs ? kiffs : [],
+      page_banners,
+      settings,
+    });
   })
 );
 
@@ -209,7 +261,11 @@ app.put(
   })
 );
 
-app.use('/api/admin/skills', crudRoutes('skills', ['name', 'percentage', 'icon', 'sort_order']));
+app.use(
+  '/api/admin/skills',
+  crudRoutes('skills', ['name', 'percentage', 'icon', 'icon_url', 'description', 'sort_order', 'section_id'])
+);
+app.use('/api/admin/skill-sections', crudRoutes('skill_sections', ['title', 'items', 'sort_order']));
 app.use(
   '/api/admin/projects',
   crudRoutes('projects', [
@@ -217,6 +273,8 @@ app.use(
     'description',
     'long_description',
     'image_url',
+    'gallery_urls',
+    'video_url',
     'project_url',
     'repo_url',
     'tags',
@@ -259,6 +317,7 @@ app.use(
     'field',
     'start_date',
     'end_date',
+    'current',
     'description',
     'long_description',
     'image_url',
@@ -266,6 +325,42 @@ app.use(
   ])
 );
 app.use('/api/admin/social-links', crudRoutes('social_links', ['platform', 'url', 'icon', 'sort_order']));
+app.use(
+  '/api/admin/kiffs',
+  crudRoutes('kiffs', [
+    'title',
+    'category',
+    'description',
+    'long_description',
+    'url',
+    'image_url',
+    'featured',
+    'sort_order',
+  ])
+);
+
+app.get(
+  '/api/admin/page-banners',
+  authMiddleware,
+  asyncHandler(async (_req, res) => {
+    res.json(await query('SELECT * FROM page_banners ORDER BY sort_order'));
+  })
+);
+
+app.put(
+  '/api/admin/page-banners/:pageKey',
+  authMiddleware,
+  asyncHandler(async (req, res) => {
+    const pageKey = req.params.pageKey;
+    const image_url = req.body.image_url ?? '';
+    const rows = await query(
+      `UPDATE page_banners SET image_url = $1 WHERE page_key = $2 RETURNING *`,
+      [image_url, pageKey]
+    );
+    if (!rows[0]) return res.status(404).json({ error: 'Bannière introuvable' });
+    res.json(rows[0]);
+  })
+);
 
 app.get(
   '/api/admin/settings',
@@ -292,7 +387,17 @@ app.put(
   })
 );
 
-app.post('/api/admin/upload', authMiddleware, upload.single('image'), (req, res) => {
+app.post('/api/admin/upload', authMiddleware, upload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'Fichier manquant' });
+  res.json({
+    url: `/uploads/${req.file.filename}`,
+    mime: req.file.mimetype,
+    name: req.file.originalname,
+  });
+});
+
+// Compat: ancien champ multipart "image"
+app.post('/api/admin/upload-image', authMiddleware, upload.single('image'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Fichier manquant' });
   res.json({ url: `/uploads/${req.file.filename}` });
 });

@@ -13,7 +13,9 @@ export default function EducationDetailPage() {
   if (!edu) return <Navigate to="/parcours" replace />;
 
   const body = edu.long_description || edu.description || '';
-  const period = `${edu.start_date || ''} — ${edu.end_date || ''}`;
+  const period = edu.current
+    ? `${edu.start_date || ''} - Formation en cours`
+    : `${edu.start_date || ''} - ${edu.end_date || ''}`;
 
   return (
     <DetailView
@@ -25,7 +27,7 @@ export default function EducationDetailPage() {
         { label: edu.degree },
       ]}
       title={edu.degree}
-      subtitle={`${edu.school}${edu.field ? ` — ${edu.field}` : ''}`}
+      subtitle={`${edu.school}${edu.field ? ` - ${edu.field}` : ''}${edu.current ? ' · En cours' : ''}`}
       image={edu.image_url || undefined}
       meta={period}
     >

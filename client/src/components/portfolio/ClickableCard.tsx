@@ -9,6 +9,7 @@ export default function ClickableCard({
   image,
   meta,
   tags,
+  badge,
 }: {
   to: string;
   title: string;
@@ -16,6 +17,7 @@ export default function ClickableCard({
   image?: string;
   meta?: string;
   tags?: string[];
+  badge?: string;
 }) {
   const img = image ? mediaUrl(image) : '';
   return (
@@ -23,9 +25,11 @@ export default function ClickableCard({
       {img && (
         <div className="clickable-card__img">
           <img src={img} alt="" loading="lazy" />
+          {badge && <span className="clickable-card__badge">{badge}</span>}
         </div>
       )}
       <div className="clickable-card__body">
+        {!img && badge && <span className="clickable-card__badge clickable-card__badge--inline">{badge}</span>}
         {meta && <span className="clickable-card__meta">{meta}</span>}
         <h3>{title}</h3>
         <p>{excerpt}</p>

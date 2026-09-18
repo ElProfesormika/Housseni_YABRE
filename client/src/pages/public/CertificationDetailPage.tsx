@@ -14,7 +14,7 @@ export default function CertificationDetailPage() {
 
   const body =
     cert.long_description ||
-    `${cert.title} — certification obtenue par Housséni YABRE (${cert.issuer || 'formation'}). Renforce le profil Data Engineer & IA : compétences opérationnelles sur l'écosystème data et cloud.`;
+    `${cert.title} - certification obtenue par Housséni YABRE (${cert.issuer || 'formation'}). Compétence utile en Data Engineering.`;
 
   return (
     <DetailView

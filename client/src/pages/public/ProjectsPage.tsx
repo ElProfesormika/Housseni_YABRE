@@ -4,6 +4,7 @@ import { usePortfolio } from '../../context/PortfolioContext';
 import { usePageTitle } from '../../hooks/usePageTitle';
 import PageBanner from '../../components/portfolio/PageBanner';
 import ClickableCard from '../../components/portfolio/ClickableCard';
+import { bannerFor } from '../../utils/banners';
 
 export default function ProjectsPage() {
   usePageTitle('Projets');
@@ -48,9 +49,9 @@ export default function ProjectsPage() {
     <>
       <PageBanner
         badge="Projets"
-        title="Réalisations Data & IA"
-        subtitle="Housséni YABRE — pipelines, ML, cloud, LLM et analyse de données"
-        image="/assets/images/ML.jpeg"
+        title="Réalisations data"
+        subtitle="Pipelines, qualité des données, ML et mise en production"
+        image={bannerFor(data.page_banners, 'projects')}
       />
       <section className="section-page container">
         <div className="filters-bar">

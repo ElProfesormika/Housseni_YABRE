@@ -1,10 +1,19 @@
 import 'dotenv/config';
-import { initDb, query } from './db.js';
+import { initDb, query, queryOne } from './db.js';
 
 const IMG = '/assets/images';
 
 export async function migrateContent() {
   await initDb();
+
+  const existingProfile = await queryOne('SELECT avatar_url, about_image_url FROM profile WHERE id = 1');
+  if (
+    existingProfile &&
+    `${existingProfile.avatar_url || ''}${existingProfile.about_image_url || ''}`.includes('/uploads/')
+  ) {
+    console.log('migrate-content: ignoré (médias /uploads déjà en base, pas d’écrasement).');
+    return;
+  }
 
   await query(
     `UPDATE profile SET
@@ -12,15 +21,15 @@ export async function migrateContent() {
       avatar_url = $6, about_image_url = $7, skills_image_url = $8, updated_at = NOW()
     WHERE id = 1`,
     [
-      'Data Engineer & Ingénieur IA',
-      'Housséni YABRE — pipelines de données & systèmes IA',
+      'Étudiant ingénieur · Aspirant chercheur en IA',
+      'Vers un doctorat en IA appliquée — stage de fin d’études orienté recherche',
       'Je suis Housséni YABRE',
-      `Étudiant en cycle ingénieur à l'UTT, Housséni YABRE se spécialise en Data Engineering et Intelligence Artificielle : pipelines ETL, architectures cloud, modèles ML/DL et mise en production de solutions data-driven.
+      `Étudiant en cycle ingénieur à l’Université de Technologie de Troyes (UTT), je me spécialise en Data Engineering et Intelligence Artificielle.
 
-Mon objectif : transformer des données brutes en insights actionnables et en produits IA robustes.
+Mon projet professionnel : enchaîner sur un doctorat (thèse) après le diplôme d’ingénieur, avec un focus sur l’IA appliquée — apprentissage robuste, systèmes intelligents, et méthodes data pour des problèmes scientifiques ou industriels.
 
-À moyen terme, j'ambitionne de poursuivre en recherche après le diplôme d'ingénieur, avec un focus sur l'IA appliquée (apprentissage robuste, optimisation, systèmes intelligents et IA pour l'industrie).`,
-      'Stack orientée ingestion, transformation, modélisation et déploiement.',
+Je recherche actuellement un stage de fin d’études de 6 mois orienté recherche (labo, R&D, ou équipe data/IA académique) afin de consolider une démarche scientifique et préparer mon entrée en thèse.`,
+      'Outils et méthodes que je mobilise pour expérimenter, prototyper et documenter des approches data & IA.',
       `${IMG}/ma_photo-removebg.png`,
       `${IMG}/mato2.png`,
       `${IMG}/DATA_SCIENCE_IMG.webp`,
@@ -183,17 +192,169 @@ Ce projet montre la capacité de Housséni YABRE à prototyper rapidement des pr
   );
 
   await query(
-    `UPDATE education SET image_url = $1, long_description = $2
+    `UPDATE education SET image_url = $1, long_description = $2, current = 1
      WHERE school ILIKE '%UTT%' OR school ILIKE '%Troyes%'`,
-    [`${IMG}/mato2.png`, `Formation Data Engineering & IA — Housséni YABRE, UTT.`]
+    [`${IMG}/mato2.png`, `Formation Data Engineering & IA — Housséni YABRE, UTT. Cycle ingénieur en cours.`]
   );
 
+  const banners = [
+    ['about', 'À propos', `${IMG}/mato2.png`, 0],
+    ['skills', 'Compétences', `${IMG}/DATA_SCIENCE_IMG.webp`, 1],
+    ['parcours', 'Parcours', `${IMG}/DATA_SCIENCE_IMG.webp`, 2],
+    ['projects', 'Projets', `${IMG}/ML.jpeg`, 3],
+    ['certifications', 'Certifications', `${IMG}/AWS.img.jpeg`, 4],
+    ['contact', 'Contact', `${IMG}/ma_photo-removebg.png`, 5],
+    ['kiffs', 'Mes kiff', `${IMG}/Python.analyse.predictive.jpeg`, 6],
+  ];
+  for (const [page_key, label, image_url, sort_order] of banners) {
+    await query(
+      `INSERT INTO page_banners (page_key, label, image_url, sort_order)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (page_key) DO UPDATE SET
+         label = EXCLUDED.label,
+         sort_order = EXCLUDED.sort_order,
+         image_url = CASE
+           WHEN page_banners.image_url IS NULL OR page_banners.image_url = '' THEN EXCLUDED.image_url
+           ELSE page_banners.image_url
+         END`,
+      [page_key, label, image_url, sort_order]
+    );
+  }
+
+  const kiffsSeed = [
+    [
+      'Google DeepMind',
+      'entreprise',
+      'Référence mondiale en recherche IA fondamentale et appliquée.',
+      'Coup de cœur pour la culture scientifique, les publications ouvertes et l’ambition de résoudre des problèmes difficiles avec rigueur.',
+      'https://deepmind.google/',
+      `${IMG}/ML.jpeg`,
+      1,
+      0,
+    ],
+    [
+      'Inria',
+      'labo',
+      'Institut national de recherche en sciences et technologies du numérique.',
+      'Labos et équipes IA / data qui incarnent l’excellence de la recherche publique française — un modèle pour une thèse.',
+      'https://www.inria.fr/',
+      `${IMG}/DATA_SCIENCE_IMG.webp`,
+      1,
+      1,
+    ],
+    [
+      'Attention Is All You Need',
+      'article',
+      'L’article fondateur des Transformers (Vaswani et al., 2017).',
+      'Un papier qui a redéfini le deep learning moderne — lecture indispensable pour comprendre l’architecture derrière les LLM.',
+      'https://arxiv.org/abs/1706.03762',
+      `${IMG}/Python.analyse.predictive.jpeg`,
+      1,
+      2,
+    ],
+  ];
+  for (const k of kiffsSeed) {
+    const existing = await query('SELECT id FROM kiffs WHERE title = $1 LIMIT 1', [k[0]]);
+    if (existing.length) {
+      await query(
+        `UPDATE kiffs SET category=$1, description=$2, long_description=$3, url=$4,
+           image_url = CASE WHEN image_url IS NULL OR image_url = '' THEN $5 ELSE image_url END,
+           featured=$6, sort_order=$7
+         WHERE id=$8`,
+        [k[1], k[2], k[3], k[4], k[5], k[6], k[7], existing[0].id]
+      );
+    } else {
+      await query(
+        `INSERT INTO kiffs (title, category, description, long_description, url, image_url, featured, sort_order)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+        k
+      );
+    }
+  }
+
   await query(`UPDATE site_settings SET value = $1 WHERE key = 'site_name'`, [
-    'Housséni YABRE — Data Engineer & IA',
+    'Housséni YABRE — Recherche IA & Data',
   ]);
   await query(`UPDATE site_settings SET value = $1 WHERE key = 'footer_text'`, [
     '© 2026 Housséni YABRE. Tous droits réservés.',
   ]);
+
+  const skillMeta = [
+    {
+      match: 'Python',
+      icon: 'python',
+      description: 'Expérimentation, scripts de recherche et prototypes ML.',
+    },
+    {
+      match: 'SQL',
+      icon: 'sql',
+      description: 'Requêtage, agrégation et préparation de jeux de données.',
+    },
+    {
+      match: 'Spark',
+      icon: 'spark',
+      description: 'Traitement à l’échelle pour analyses et pipelines batch.',
+    },
+    {
+      match: 'Talend',
+      icon: 'etl',
+      description: 'Ingestion et transformation de données structurées.',
+    },
+    {
+      match: 'Machine Learning',
+      icon: 'ml',
+      description: 'Modélisation, évaluation et approches apprentissage / LLM.',
+    },
+    {
+      match: 'AWS',
+      icon: 'aws',
+      description: 'Environnements reproductibles et déploiement d’expériences.',
+    },
+    {
+      match: 'Git',
+      icon: 'git',
+      description: 'Versionning, collaboration et traçabilité des expériences.',
+    },
+    {
+      match: 'Power BI',
+      icon: 'powerbi',
+      description: 'Visualisation et communication des résultats.',
+    },
+    {
+      match: 'HTML',
+      icon: 'code',
+      description: 'Interfaces légères pour démonstrateurs et outils internes.',
+    },
+  ];
+
+  for (const s of skillMeta) {
+    await query(
+      `UPDATE skills
+       SET icon = $1,
+           description = CASE
+             WHEN description IS NULL OR description = '' THEN $2
+             ELSE description
+           END
+       WHERE name ILIKE $3`,
+      [s.icon, s.description, `%${s.match}%`]
+    );
+  }
+
+  await query(
+    `UPDATE experiences SET description = $1
+     WHERE company ILIKE '%UTT%' OR company ILIKE '%Troyes%'`,
+    [
+      'Formation data engineering & IA — préparation d’une trajectoire recherche / thèse en IA appliquée.',
+    ]
+  );
+
+  await query(
+    `UPDATE education SET description = $1
+     WHERE school ILIKE '%UTT%' OR school ILIKE '%Troyes%'`,
+    [
+      'Spécialisation data engineering et intelligence artificielle — ambition doctorat en IA appliquée.',
+    ]
+  );
 
   console.log('✅ Contenu migré (Housséni YABRE + images).');
 }

@@ -13,7 +13,7 @@ export default function ExperienceDetailPage() {
   if (!exp) return <Navigate to="/parcours" replace />;
 
   const body = exp.long_description || exp.description;
-  const period = `${exp.start_date} — ${exp.current ? 'Présent' : exp.end_date || ''}`;
+  const period = `${exp.start_date} - ${exp.current ? 'Présent' : exp.end_date || ''}`;
 
   return (
     <DetailView

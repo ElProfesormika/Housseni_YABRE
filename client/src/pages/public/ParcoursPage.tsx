@@ -2,24 +2,26 @@ import { usePortfolio } from '../../context/PortfolioContext';
 import { usePageTitle } from '../../hooks/usePageTitle';
 import PageBanner from '../../components/portfolio/PageBanner';
 import ClickableCard from '../../components/portfolio/ClickableCard';
+import { bannerFor } from '../../utils/banners';
 
-function formatPeriod(start: string, end: string | null, current: number) {
-  return `${start} — ${current ? 'Présent' : end || ''}`;
+function formatPeriod(start: string | null, end: string | null | undefined, current?: number) {
+  const endLabel = current ? 'En cours' : end || '';
+  return `${start || ''} - ${endLabel}`;
 }
 
 export default function ParcoursPage() {
   usePageTitle('Parcours');
   const { data } = usePortfolio();
   if (!data) return null;
-  const { experiences, education } = data;
+  const { experiences, education, page_banners } = data;
 
   return (
     <>
       <PageBanner
         badge="Parcours"
         title="Expériences & Formation"
-        subtitle="Parcours orienté Data Engineering et Intelligence Artificielle"
-        image="/assets/images/DATA_SCIENCE_IMG.webp"
+        subtitle="Formation Data Engineering & IA, stage d’intégration de données et projets data"
+        image={bannerFor(page_banners, 'parcours')}
       />
       <section className="section-page container">
         <h2 className="block-title">Expériences professionnelles</h2>
@@ -44,9 +46,10 @@ export default function ParcoursPage() {
               key={e.id}
               to={`/parcours/formation/${e.id}`}
               title={e.degree}
-              excerpt={e.description || `${e.school} — ${e.field || ''}`}
+              excerpt={e.description || `${e.school} - ${e.field || ''}`}
               image={e.image_url || undefined}
-              meta={`${e.school} · ${e.start_date} — ${e.end_date}`}
+              meta={`${e.school} · ${formatPeriod(e.start_date, e.end_date, e.current)}`}
+              badge={e.current ? 'Formation en cours' : undefined}
             />
           ))}
         </div>

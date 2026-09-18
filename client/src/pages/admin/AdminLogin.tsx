@@ -34,7 +34,7 @@ export default function AdminLogin() {
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <Lock size={40} style={{ color: 'var(--accent)', margin: '0 auto 1rem' }} />
           <h1 style={{ fontSize: '1.5rem' }}>Administration</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Portfolio Housséni YABRE — connexion admin</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Portfolio Housséni YABRE - connexion admin</p>
         </div>
         {error && <div className="alert alert-error">{error}</div>}
         <div className="form-group">

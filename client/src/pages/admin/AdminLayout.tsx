@@ -12,6 +12,9 @@ import {
   ExternalLink,
   Wrench,
   Inbox,
+  ImageIcon,
+  Heart,
+  Layers,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from '../../components/ThemeToggle';
@@ -19,11 +22,14 @@ import ThemeToggle from '../../components/ThemeToggle';
 const nav = [
   { to: '/admin', end: true, icon: LayoutDashboard, label: 'Tableau de bord' },
   { to: '/admin/profile', icon: User, label: 'Profil' },
+  { to: '/admin/banners', icon: ImageIcon, label: 'Bannières pages' },
   { to: '/admin/projects', icon: FolderKanban, label: 'Projets' },
   { to: '/admin/experiences', icon: Briefcase, label: 'Expériences' },
+  { to: '/admin/skill-sections', icon: Layers, label: 'Groupes compétences' },
   { to: '/admin/skills', icon: Wrench, label: 'Compétences' },
   { to: '/admin/certifications', icon: Award, label: 'Certifications' },
   { to: '/admin/education', icon: GraduationCap, label: 'Formation' },
+  { to: '/admin/kiffs', icon: Heart, label: 'Mes kiff' },
   { to: '/admin/social', icon: Share2, label: 'Réseaux' },
   { to: '/admin/messages', icon: Inbox, label: 'Messages' },
   { to: '/admin/settings', icon: Settings, label: 'Paramètres' },

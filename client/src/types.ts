@@ -29,6 +29,16 @@ export interface Skill {
   name: string;
   percentage: number;
   icon: string;
+  icon_url?: string | null;
+  description?: string | null;
+  section_id?: number | null;
+  sort_order: number;
+}
+
+export interface SkillSection {
+  id: number;
+  title: string;
+  items: string;
   sort_order: number;
 }
 
@@ -38,6 +48,8 @@ export interface Project {
   description: string;
   long_description?: string | null;
   image_url: string;
+  gallery_urls?: string | null;
+  video_url?: string | null;
   project_url: string;
   repo_url: string;
   tags: string;
@@ -77,9 +89,29 @@ export interface Education {
   field: string | null;
   start_date: string | null;
   end_date: string | null;
+  current?: number;
   description: string | null;
   long_description?: string | null;
   image_url?: string | null;
+  sort_order: number;
+}
+
+export interface PageBanner {
+  page_key: string;
+  label: string;
+  image_url: string;
+  sort_order: number;
+}
+
+export interface Kiff {
+  id: number;
+  title: string;
+  category: string;
+  description: string;
+  long_description?: string | null;
+  url: string;
+  image_url: string;
+  featured: number;
   sort_order: number;
 }
 
@@ -87,9 +119,12 @@ export interface PortfolioData {
   profile: Profile;
   social_links: SocialLink[];
   skills: Skill[];
+  skill_sections: SkillSection[];
   projects: Project[];
   experiences: Experience[];
   certifications: Certification[];
   education: Education[];
+  kiffs: Kiff[];
+  page_banners: PageBanner[];
   settings: Record<string, string>;
 }

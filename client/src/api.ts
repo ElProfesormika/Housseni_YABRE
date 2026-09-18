@@ -65,9 +65,18 @@ export const api = {
       body: JSON.stringify(body),
     }),
 
+  getPageBanners: () =>
+    request<import('./types').PageBanner[]>(`${API}/admin/page-banners`, { headers: headers(true) }),
+  updatePageBanner: (pageKey: string, image_url: string) =>
+    request<import('./types').PageBanner>(`${API}/admin/page-banners/${pageKey}`, {
+      method: 'PUT',
+      headers: headers(true),
+      body: JSON.stringify({ image_url }),
+    }),
+
   uploadImage: async (file: File) => {
     const form = new FormData();
-    form.append('image', file);
+    form.append('file', file);
     const token = localStorage.getItem('admin_token');
     const res = await fetch(`${API}/admin/upload`, {
       method: 'POST',
@@ -76,7 +85,21 @@ export const api = {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Upload échoué');
-    return data as { url: string };
+    return data as { url: string; mime?: string; name?: string };
+  },
+
+  uploadFile: async (file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    const token = localStorage.getItem('admin_token');
+    const res = await fetch(`${API}/admin/upload`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: form,
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Upload échoué');
+    return data as { url: string; mime?: string; name?: string };
   },
 
   changePassword: (currentPassword: string, newPassword: string) =>

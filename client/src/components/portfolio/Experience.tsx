@@ -3,7 +3,7 @@ import { Briefcase, GraduationCap } from 'lucide-react';
 
 function formatPeriod(start: string, end: string | null, current: number) {
   const endLabel = current ? 'Présent' : end || '';
-  return `${start} — ${endLabel}`;
+  return `${start} - ${endLabel}`;
 }
 
 export default function ExperienceSection({
@@ -53,9 +53,10 @@ export default function ExperienceSection({
               {education.map((e) => (
                 <article key={e.id} className="card" style={{ borderLeft: '3px solid var(--accent-2)' }}>
                   <h4 style={{ fontSize: '1.15rem', fontWeight: 600 }}>{e.degree}</h4>
-                  <p style={{ color: 'var(--accent-2)' }}>{e.school}{e.field ? ` — ${e.field}` : ''}</p>
+                  <p style={{ color: 'var(--accent-2)' }}>{e.school}{e.field ? ` - ${e.field}` : ''}</p>
                   <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem', fontFamily: 'var(--mono)' }}>
-                    {e.start_date} — {e.end_date}
+                    {formatPeriod(e.start_date || '', e.end_date, e.current || 0)}
+                    {e.current ? ' · Formation en cours' : ''}
                   </span>
                   {e.description && <p style={{ marginTop: '0.75rem', color: 'var(--text-muted)' }}>{e.description}</p>}
                 </article>
